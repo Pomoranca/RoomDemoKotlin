@@ -9,12 +9,12 @@ import android.view.MenuItem
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_add_note.*
 
-class AddNoteActivity : AppCompatActivity() {
+class AddEditNoteActivity : AppCompatActivity() {
     companion object {
-
-    const val EXTRA_TITLE = "com.pomoranca.roomdemokotlin.EXTRA_TITLE"
-    const val EXTRA_DESCRIPTION = "com.pomoranca.roomdemokotlin.EXTRA_DESCRIPTION"
-    const val EXTRA_PRIORITY = "com.pomoranca.roomdemokotlin.EXTRA_PRIORITY"
+        const val EXTRA_ID = "com.pomoranca.roomdemokotlin.EXTRA_ID"
+        const val EXTRA_TITLE = "com.pomoranca.roomdemokotlin.EXTRA_TITLE"
+        const val EXTRA_DESCRIPTION = "com.pomoranca.roomdemokotlin.EXTRA_DESCRIPTION"
+        const val EXTRA_PRIORITY = "com.pomoranca.roomdemokotlin.EXTRA_PRIORITY"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,7 +25,15 @@ class AddNoteActivity : AppCompatActivity() {
         number_picker_priority.maxValue = 10
 
         supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_close)
-        title = "Add Note"
+        val intent = intent
+       if(intent.hasExtra(EXTRA_ID)) {
+           title = "Edit Note"
+           edit_text_title.setText(intent.getStringExtra(EXTRA_TITLE))
+           edit_text_description.setText(intent.getStringExtra(EXTRA_DESCRIPTION))
+           number_picker_priority.value = intent.getIntExtra(EXTRA_PRIORITY, 1)
+       } else {
+           title = "Add Note"
+       }
     }
 
 
@@ -38,11 +46,14 @@ class AddNoteActivity : AppCompatActivity() {
             putExtra(EXTRA_TITLE, edit_text_title.text.toString())
             putExtra(EXTRA_DESCRIPTION, edit_text_description.text.toString())
             putExtra(EXTRA_PRIORITY, number_picker_priority.value)
+
+            if (intent.getIntExtra(EXTRA_ID, -1) != -1) {
+                putExtra(EXTRA_ID, intent.getIntExtra(EXTRA_ID, -1))
+            }
         }
         setResult(Activity.RESULT_OK, data)
         finish()
     }
-
 
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {

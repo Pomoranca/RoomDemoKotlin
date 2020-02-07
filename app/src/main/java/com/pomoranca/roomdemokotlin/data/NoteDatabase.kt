@@ -1,4 +1,4 @@
-package com.pomoranca.roomdemokotlin
+package com.pomoranca.roomdemokotlin.data
 
 import android.content.Context
 import android.os.AsyncTask
@@ -28,25 +28,44 @@ abstract class NoteDatabase : RoomDatabase() {
                 }
             }
             return instance
-
         }
-        private val roomCallback = object : RoomDatabase.Callback(){
+
+        private val roomCallback = object : RoomDatabase.Callback() {
             override fun onCreate(db: SupportSQLiteDatabase) {
                 super.onCreate(db)
-                PopulateDbAsyncTask(instance).execute()
+                PopulateDbAsyncTask(
+                    instance
+                ).execute()
             }
         }
-
-
-
     }
-    class PopulateDbAsyncTask(db : NoteDatabase?) : AsyncTask<Unit, Unit, Unit>() {
- private val noteDao : NoteDao? = db?.noteDao()
+
+    class PopulateDbAsyncTask(db: NoteDatabase?) : AsyncTask<Unit, Unit, Unit>() {
+        private val noteDao: NoteDao? = db?.noteDao()
         override fun doInBackground(vararg params: Unit?) {
-            noteDao?.insert(Note("Title 1", "Description 1", 1))
-            noteDao?.insert(Note("Title 2", "Description 2", 2))
-            noteDao?.insert(Note("Title 3", "Description 3", 3))
+            noteDao?.insert(
+                Note(
+                    "Title 1",
+                    "Description 1",
+                    1
+                )
+            )
+            noteDao?.insert(
+                Note(
+                    "Title 2",
+                    "Description 2",
+                    2
+                )
+            )
+            noteDao?.insert(
+                Note(
+                    "Title 3",
+                    "Description 3",
+                    3
+                )
+            )
         }
+
     }
 
 

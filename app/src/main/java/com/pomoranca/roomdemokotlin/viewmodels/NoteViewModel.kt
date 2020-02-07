@@ -1,8 +1,10 @@
-package com.pomoranca.roomdemokotlin
+package com.pomoranca.roomdemokotlin.viewmodels
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
+import com.pomoranca.roomdemokotlin.data.Note
+import com.pomoranca.roomdemokotlin.data.NoteRepository
 
 class NoteViewModel(application: Application) : AndroidViewModel(application) {
     private var repository: NoteRepository =

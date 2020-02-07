@@ -5,20 +5,23 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
-import android.view.MenuInflater
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.ItemTouchHelper
-import androidx.recyclerview.widget.ItemTouchHelper.SimpleCallback
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.pomoranca.roomdemokotlin.adapters.NoteAdapter
+import com.pomoranca.roomdemokotlin.adapters.NoteAdapter.OnItemClickListener
+import com.pomoranca.roomdemokotlin.data.Note
+import com.pomoranca.roomdemokotlin.viewmodels.NoteViewModel
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
     companion object {
         const val ADD_NOTE_REQUEST = 1
+        const val EDIT_NOTE_REQUEST = 2
     }
 
     private lateinit var noteViewModel: NoteViewModel
@@ -29,7 +32,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         button_add_note.setOnClickListener {
-            val intent = Intent(this@MainActivity, AddNoteActivity::class.java)
+            val intent = Intent(this@MainActivity, AddEditNoteActivity::class.java)
             startActivityForResult(intent, ADD_NOTE_REQUEST)
         }
 
@@ -39,10 +42,9 @@ class MainActivity : AppCompatActivity() {
         recycler_view.adapter = adapter
 
 
-        noteViewModel = ViewModelProviders.of(this).get(NoteViewModel::class.java)
-        //livedata
-        noteViewModel.getAllNotes().observe(this, Observer<List<Note>> {
-            adapter.setNotes(it)
+        noteViewModel = ViewModelProviders.of(this).get(NoteViewModel::class.java) //returns instance of viewmodel
+        noteViewModel.getAllNotes().observe(this, Observer<List<Note>> {   //livedata
+            adapter.submitList(it)
         })
 
         ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
@@ -63,19 +65,46 @@ class MainActivity : AppCompatActivity() {
             }
 
         }).attachToRecyclerView(recycler_view)
+        adapter.setOnItemClickListener(object : OnItemClickListener {
+            override fun onItemClick(note: Note) {
+                val intent = Intent(this@MainActivity, AddEditNoteActivity::class.java)
+                intent.putExtra(AddEditNoteActivity.EXTRA_ID, note.id)
+                intent.putExtra(AddEditNoteActivity.EXTRA_TITLE, note.title)
+                intent.putExtra(AddEditNoteActivity.EXTRA_DESCRIPTION, note.description)
+                intent.putExtra(AddEditNoteActivity.EXTRA_PRIORITY, note.priority)
+                startActivityForResult(intent, EDIT_NOTE_REQUEST)
+
+            }
+        })
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == ADD_NOTE_REQUEST && resultCode == Activity.RESULT_OK) {
-            val note = Note(
-                data!!.getStringExtra(AddNoteActivity.EXTRA_TITLE)!!,
-                data.getStringExtra(AddNoteActivity.EXTRA_DESCRIPTION)!!,
-                data.getIntExtra(AddNoteActivity.EXTRA_PRIORITY, 1)
+            val newNote = Note(
+                data!!.getStringExtra(AddEditNoteActivity.EXTRA_TITLE)!!,
+                data.getStringExtra(AddEditNoteActivity.EXTRA_DESCRIPTION)!!,
+                data.getIntExtra(AddEditNoteActivity.EXTRA_PRIORITY, 1)
             )
-            noteViewModel.insert(note)
+            noteViewModel.insert(newNote)
             Toast.makeText(this, "Note saved", Toast.LENGTH_SHORT).show()
+
+        } else if (requestCode == EDIT_NOTE_REQUEST && resultCode == Activity.RESULT_OK) {
+            val id = data!!.getIntExtra(AddEditNoteActivity.EXTRA_ID, -1)
+            if (id == -1) {
+                Toast.makeText(this, "Note can't be updated", Toast.LENGTH_SHORT).show()
+                return
+            }
+            val updateNote = Note(
+                data.getStringExtra(AddEditNoteActivity.EXTRA_TITLE)!!,
+                data.getStringExtra(AddEditNoteActivity.EXTRA_DESCRIPTION)!!,
+                data.getIntExtra(AddEditNoteActivity.EXTRA_PRIORITY, 1)
+            )
+             updateNote.id = id
+            noteViewModel.update(updateNote)
+            Toast.makeText(this, "Note updated", Toast.LENGTH_SHORT).show()
+
 
         } else {
             Toast.makeText(this, "Note not saved", Toast.LENGTH_SHORT).show()

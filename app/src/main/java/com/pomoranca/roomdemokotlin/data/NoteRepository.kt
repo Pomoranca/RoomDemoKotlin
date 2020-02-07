@@ -1,4 +1,4 @@
-package com.pomoranca.roomdemokotlin
+package com.pomoranca.roomdemokotlin.data
 
 import android.app.Application
 import android.os.AsyncTask
@@ -9,26 +9,32 @@ class NoteRepository(application: Application) {
     private var allNotes: LiveData<List<Note>>
 
     init {
-        val database = NoteDatabase.getInstance(application.applicationContext)!!
+        val database: NoteDatabase = NoteDatabase.getInstance(application.applicationContext)!!
         noteDao = database.noteDao()
         allNotes = noteDao.getAllNotes()
     }
 
     fun insert(note: Note) {
-        val insertNoteAsyncTask = InsertNoteAsyncTask(noteDao).execute(note)
+        val insertNoteAsyncTask = InsertNoteAsyncTask(
+            noteDao
+        ).execute(note)
     }
 
     fun update(note: Note) {
-        val updateNoteAsyncTask = UpdateNoteAsyncTask(noteDao).execute(note)
+        val updateNoteAsyncTask = UpdateNoteAsyncTask(
+            noteDao
+        ).execute(note)
     }
 
     fun delete(note: Note) {
-        val deleteNoteAsyncTask = DeleteNoteAsyncTask(noteDao).execute(note)
+        val deleteNoteAsyncTask = DeleteNoteAsyncTask(
+            noteDao
+        ).execute(note)
 
     }
 
     fun deleteAllNotes() {
-        val deleteAllNotesAsyncTask = DeleteNoteAsyncTask(
+        val deleteAllNotesAsyncTask = DeleteAllNotesAsyncTask(
             noteDao
         ).execute()
     }
@@ -45,24 +51,21 @@ class NoteRepository(application: Application) {
             }
         }
 
-        private class UpdateNoteAsyncTask(noteDao: NoteDao) : AsyncTask<Note, Unit, Unit>() {
-            val noteDao = noteDao
+        private class UpdateNoteAsyncTask(val noteDao: NoteDao) : AsyncTask<Note, Unit, Unit>() {
 
             override fun doInBackground(vararg p0: Note?) {
                 noteDao.update(p0[0]!!)
             }
         }
 
-        private class DeleteNoteAsyncTask(noteDao: NoteDao) : AsyncTask<Note, Unit, Unit>() {
-            val noteDao = noteDao
+        private class DeleteNoteAsyncTask(val noteDao: NoteDao) : AsyncTask<Note, Unit, Unit>() {
 
             override fun doInBackground(vararg p0: Note?) {
                 noteDao.delete(p0[0]!!)
             }
         }
 
-        private class DeleteAllNotesAsyncTask(noteDao: NoteDao) : AsyncTask<Unit, Unit, Unit>() {
-            val noteDao = noteDao
+        private class DeleteAllNotesAsyncTask(val noteDao: NoteDao) : AsyncTask<Unit, Unit, Unit>() {
 
             override fun doInBackground(vararg p0: Unit?) {
                 noteDao.deleteAllNotes()
